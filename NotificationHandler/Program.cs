@@ -49,7 +49,9 @@ internal class Program
                         {
                             foreach (var item in newNots)
                             {
-                                NotificationReseived(item);
+                                await Task.Delay(2000);
+                                if (item.AppInfo.DisplayInfo.DisplayName.ToLower().Contains("microsoft teams"))
+                                    NotificationReseived(item);
                             }
                             notifications = notifs.ToList();
                         }
@@ -87,9 +89,15 @@ internal class Program
     {
         try
         {
-            using (HttpClient client = new())
+            HttpClientHandler handler = new HttpClientHandler();
+            IWebProxy proxy = WebRequest.GetSystemWebProxy();
+            proxy.Credentials = CredentialCache.DefaultCredentials;
+            handler.Proxy = proxy;
+
+            using (HttpClient client = new(handler))
             using (HttpRequestMessage request = new(HttpMethod.Post, config.Url))
             {
+
                 NameValueCollection outgoingQueryString = HttpUtility.ParseQueryString(String.Empty);
                 outgoingQueryString.Add("token", config.Token);
                 outgoingQueryString.Add("user", config.User);
